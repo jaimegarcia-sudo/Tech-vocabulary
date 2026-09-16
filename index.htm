@@ -1,0 +1,408 @@
+import React, { useState, useMemo } from 'react';
+import { Search, Volume2, BookOpen, ExternalLink, ChevronDown, ChevronUp, MessageSquareQuote } from 'lucide-react';
+
+const glossaryData = [
+  {
+    category: "Daily Meetings",
+    terms: [
+      {
+        term: "Daily Stand-up / Daily Scrum",
+        phonetic: "/ˈdeɪli ˈstændˌʌp/ / /ˈdeɪli skrʌm/",
+        cambridgeQuery: "stand-up",
+        definition: "A brief, 15-minute daily sync where the team discusses what they did yesterday, what they will do today, and any blockers.",
+        context: "Let's discuss this blocker during our daily stand-up so the delivery team can help."
+      },
+      {
+        term: "Blocker / Impediment",
+        phonetic: "/ˈblɑː.kɚ/ / /ɪmˈped.ə.mənt/",
+        cambridgeQuery: "impediment",
+        definition: "Any issue or obstacle that prevents a team member from completing their assigned task.",
+        context: "I have a blocker with the Salesforce CPQ integration, I need help from a Tech Lead."
+      },
+      {
+        term: "Async (Asynchronous)",
+        phonetic: "/eɪˈsɪŋ.krə.nəs/",
+        cambridgeQuery: "asynchronous",
+        definition: "Communication that does not happen in real-time (e.g., Slack messages, Jira comments) often used in remote teams.",
+        context: "Since we are on different time zones, let's provide async updates on the ticket."
+      },
+      {
+        term: "Parking Lot",
+        phonetic: "/ˈpɑːr.kɪŋ ˌlɑːt/",
+        cambridgeQuery: "parking-lot",
+        definition: "A designated time at the end of a meeting or a specific list to discuss topics that are important but off-topic.",
+        context: "That's a deep technical issue about MuleSoft; let's put it in the parking lot for after the daily."
+      },
+      {
+        term: "Record (Verb)",
+        phonetic: "/rɪˈkɔːrd/",
+        cambridgeQuery: "record",
+        definition: "The action of capturing audio and video of a virtual meeting for later review or async sharing.",
+        context: "Can someone record this meeting for the team members who couldn't attend?"
+      },
+      {
+        term: "Mute / Unmute",
+        phonetic: "/mjuːt/ / /ʌnˈmjuːt/",
+        cambridgeQuery: "mute",
+        definition: "Turning your microphone off or on during a virtual meeting to prevent background noise.",
+        context: "I think you are on mute, we can't hear your update."
+      },
+      {
+        term: "Virtual Background",
+        phonetic: "/ˈvɝː.tʃu.əl ˈbæk.ɡraʊnd/",
+        cambridgeQuery: "virtual",
+        definition: "A digital image or blur effect applied to the background during a video call to maintain privacy.",
+        context: "Please use the official Silverline virtual background for the client demo."
+      }
+    ]
+  },
+  {
+    category: "Sprints",
+    terms: [
+      {
+        term: "Sprint / Iteration",
+        phonetic: "/sprɪnt/ / /ˌɪt̬.əˈreɪ.ʃən/",
+        cambridgeQuery: "sprint",
+        definition: "A set period of time (usually 1-4 weeks) during which specific work has to be completed and made ready for review.",
+        context: "In this sprint, we will focus on deploying the new Agentforce solution."
+      },
+      {
+        term: "Sprint Planning",
+        phonetic: "/sprɪnt ˈplæn.ɪŋ/",
+        cambridgeQuery: "planning",
+        definition: "A collaborative meeting where the team determines what items from the product backlog will be worked on.",
+        context: "During sprint planning, we'll assign the capacity of our nearshore resources."
+      },
+      {
+        term: "Backlog Grooming",
+        phonetic: "/ˈbæk.lɑːɡ ˈɡruː.mɪŋ/",
+        cambridgeQuery: "grooming",
+        definition: "The ongoing process of reviewing, updating, and prioritizing items in the product backlog.",
+        context: "We need to groom the backlog to ensure the user stories for the Experience Cloud project are clear."
+      },
+      {
+        term: "Story Point",
+        phonetic: "/ˈstɔːr.i ˌpɔɪnt/",
+        cambridgeQuery: "point",
+        definition: "A metric used in agile project management and development to estimate the difficulty of implementing a given user story.",
+        context: "We estimated this custom Salesforce product development at 5 story points."
+      },
+      {
+        term: "Capacity",
+        phonetic: "/kəˈpæs.ə.t̬i/",
+        cambridgeQuery: "capacity",
+        definition: "The total amount of work (usually in hours or story points) a team can realistically complete during a sprint.",
+        context: "With the new Silverline Boot Camp graduates joining, our team's capacity has increased."
+      }
+    ]
+  },
+  {
+    category: "Demos",
+    terms: [
+      {
+        term: "Sprint Review / Demo",
+        phonetic: "/ˈdem.oʊ/",
+        cambridgeQuery: "demo",
+        definition: "A meeting at the end of the sprint to show what the team has accomplished (working software) to stakeholders.",
+        context: "In tomorrow's demo, we will showcase the new Field Service Lightning features to the US Partner."
+      },
+      {
+        term: "White-label Delivery",
+        phonetic: "/ˈwaɪtˌleɪ.bəl dɪˈlɪv.ɚ.i/",
+        cambridgeQuery: "white-label",
+        definition: "A service produced by one company that other companies rebrand to make it appear as if they made it.",
+        context: "Make sure during the client demo we act as a seamless white-label extension of their in-house team."
+      },
+      {
+        term: "UAT (User Acceptance Testing)",
+        phonetic: "/ˌjuː.eɪˈtiː/ (Acronym)",
+        cambridgeQuery: "user-acceptance-testing",
+        definition: "The final phase of software testing where end-users verify that the system operates according to requirements.",
+        context: "We will guide the non-profit client through UAT after the demo of the new Salesforce implementation."
+      },
+      {
+        term: "MVP (Minimum Viable Product)",
+        phonetic: "/ˌem.viːˈpiː/ (Acronym)",
+        cambridgeQuery: "mvp",
+        definition: "A product with enough features to attract early-adopter customers and validate a product idea early.",
+        context: "We will demo the MVP of the NetSuite-Salesforce integration using MuleSoft Composer."
+      },
+      {
+        term: "Screen Sharing",
+        phonetic: "/ˈskriːn ˌʃer.ɪŋ/",
+        cambridgeQuery: "screen-sharing",
+        definition: "Broadcasting one's computer screen to other participants in a virtual meeting to present work or troubleshoot.",
+        context: "I'll start screen sharing so you can see the new Experience Cloud portal."
+      }
+    ]
+  },
+  {
+    category: "Weekly Meetings",
+    terms: [
+      {
+        term: "Sprint Retrospective (Retro)",
+        phonetic: "/sprɪnt ˌret.rəˈspek.tɪv/",
+        cambridgeQuery: "retrospective",
+        definition: "A meeting held at the end of a sprint to discuss what went well, what didn't, and how to improve.",
+        context: "In our retro, let's discuss how we can improve our async delivery to build more client trust."
+      },
+      {
+        term: "Sync / Touchpoint",
+        phonetic: "/sɪŋk/ / /ˈtʌtʃ.pɔɪnt/",
+        cambridgeQuery: "sync",
+        definition: "A regular meeting to align on project status, goals, and upcoming milestones.",
+        context: "Let's have a weekly sync with the Account Manager and Tech Leads to review the project's health."
+      },
+      {
+        term: "CSAT (Customer Satisfaction)",
+        phonetic: "/ˈsiː.sæt/ (Acronym)",
+        cambridgeQuery: "satisfaction",
+        definition: "A metric used to measure the degree to which a customer is satisfied with a product, service, or experience.",
+        context: "Our goal this week is to maintain our 4.5/5 CSAT score with our North American partners."
+      },
+      {
+        term: "KPI (Key Performance Indicator)",
+        phonetic: "/ˌkeɪ.piːˈaɪ/ (Acronym)",
+        cambridgeQuery: "kpi",
+        definition: "A measurable value that demonstrates how effectively a company is achieving key business objectives.",
+        context: "We'll review our KPIs, including project delivery costs and resource allocation, in the weekly sync."
+      }
+    ]
+  },
+  {
+    category: "WFH & Nearshore",
+    terms: [
+      {
+        term: "Nearshore",
+        phonetic: "/ˈnɪr.ʃɔːr/",
+        cambridgeQuery: "nearshore",
+        definition: "The practice of transferring a business operation to a nearby country, often sharing the same time zone.",
+        context: "As a Nearshore Salesforce Partner in El Salvador, we work in the same time zone as our US clients."
+      },
+      {
+        term: "Staff Augmentation",
+        phonetic: "/stæf ˌɔːɡ.menˈteɪ.ʃən/",
+        cambridgeQuery: "augmentation",
+        definition: "An outsourcing strategy to staff a project and respond to business objectives with additional external talent.",
+        context: "We provide staff augmentation through our monthly retainer model."
+      },
+      {
+        term: "NDA (Non-Disclosure Agreement)",
+        phonetic: "/ˌen.diːˈeɪ/ (Acronym)",
+        cambridgeQuery: "nda",
+        definition: "A legally binding contract establishing a confidential relationship, crucial when handling client data remotely.",
+        context: "All our remote certified experts sign strict NDAs to protect client intellectual property."
+      },
+      {
+        term: "SME (Subject Matter Expert)",
+        phonetic: "/ˌes.emˈiː/ (Acronym)",
+        cambridgeQuery: "expert",
+        definition: "An individual with deep understanding and proficiency in a particular technology or process.",
+        context: "Our nearshore resources are backed by SMEs and Solution Architects."
+      },
+      {
+        term: "Ping",
+        phonetic: "/pɪŋ/",
+        cambridgeQuery: "ping",
+        definition: "Sending a quick direct message, usually via Slack or Teams, to get someone's immediate attention.",
+        context: "I will ping the Tech Lead to see if they have time for a quick call."
+      },
+      {
+        term: "Thread",
+        phonetic: "/θred/",
+        cambridgeQuery: "thread",
+        definition: "A grouped series of replies to a specific message in a chat tool, keeping conversations organized.",
+        context: "Let's keep the discussion about this Jira ticket in the Slack thread."
+      },
+      {
+        term: "Bandwidth",
+        phonetic: "/ˈbænd.wɪtθ/",
+        cambridgeQuery: "bandwidth",
+        definition: "A person's available time and energy to take on additional tasks or projects.",
+        context: "I don't have the bandwidth to take on another story this sprint."
+      }
+    ]
+  },
+  {
+    category: "Salesforce Specific",
+    terms: [
+      {
+        term: "Agentforce / Sivarforce",
+        phonetic: "/ˈeɪ.dʒənt.fɔːrs/ (Tech Term)",
+        cambridgeQuery: "agent",
+        definition: "Salesforce's AI-powered engagement agent solutions, often implemented to enhance digital experiences.",
+        context: "We are proud to have delivered the first Agentforce in El Salvador with Fundación Caprile."
+      },
+      {
+        term: "Org (Organization)",
+        phonetic: "/ɔːrɡ/ (Abbreviation)",
+        cambridgeQuery: "organization",
+        definition: "A specific instance of Salesforce assigned to a customer, containing their data and customizations.",
+        context: "We need to deploy the new package into the client's production Org."
+      },
+      {
+        term: "ISV Partner",
+        phonetic: "/aɪ ɛs vi/ (Acronym)",
+        cambridgeQuery: "software",
+        definition: "A company that builds software on the Salesforce platform and distributes it via the AppExchange.",
+        context: "Digital Partner is a registered ISV partner, which adds credibility to our solutions."
+      },
+      {
+        term: "Record (Noun)",
+        phonetic: "/ˈrek.ɚd/",
+        cambridgeQuery: "record",
+        definition: "A specific data entry in a database or CRM system, such as a Salesforce Account or Contact record.",
+        context: "Please update the client record in Salesforce before the sync."
+      }
+    ]
+  }
+];
+
+export default function App() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState(
+    glossaryData.reduce((acc, cat) => ({ ...acc, [cat.category]: true }), {})
+  );
+
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const filteredData = useMemo(() => {
+    if (!searchTerm.trim()) return glossaryData;
+    const lowerSearch = searchTerm.toLowerCase();
+    
+    return glossaryData.map(category => {
+      const filteredTerms = category.terms.filter(item => 
+        item.term.toLowerCase().includes(lowerSearch) || 
+        item.definition.toLowerCase().includes(lowerSearch) ||
+        item.context.toLowerCase().includes(lowerSearch)
+      );
+      return { ...category, terms: filteredTerms };
+    }).filter(category => category.terms.length > 0);
+  }, [searchTerm]);
+
+  const generateCambridgeUrl = (query) => {
+    return `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(query)}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Header Section */}
+        <header className="mb-10 text-center space-y-4">
+          <div className="inline-flex items-center justify-center p-3 bg-blue-100 rounded-full mb-2 text-blue-700">
+            <Volume2 size={32} />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
+            WFH & Agile Pronunciation Glossary
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            A comprehensive vocabulary guide for collaborators at <strong>Silverline Central America</strong> and <strong>Digital Partner</strong>. Master the terminology and sound like a pro.
+          </p>
+        </header>
+
+        {/* Search Bar */}
+        <div className="relative mb-8 shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-11 pr-4 py-4 rounded-xl border-slate-200 bg-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-lg"
+            placeholder="Search for terms, definitions, or context..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Glossary Content */}
+        <div className="space-y-6">
+          {filteredData.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+              <BookOpen className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+              <h3 className="text-lg font-medium text-slate-900">No terms found</h3>
+              <p className="text-slate-500 mt-1">Try adjusting your search criteria.</p>
+            </div>
+          ) : (
+            filteredData.map((category) => (
+              <div key={category.category} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                
+                {/* Category Header */}
+                <button
+                  onClick={() => toggleCategory(category.category)}
+                  className="w-full flex items-center justify-between p-5 bg-white hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50 border-b border-slate-100"
+                >
+                  <h2 className="text-xl font-bold text-slate-800">{category.category}</h2>
+                  <div className="text-slate-400">
+                    {expandedCategories[category.category] ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                  </div>
+                </button>
+
+                {/* Term List */}
+                {expandedCategories[category.category] && (
+                  <div className="divide-y divide-slate-100">
+                    {category.terms.map((item, idx) => (
+                      <div key={idx} className="p-5 md:p-6 hover:bg-slate-50/50 transition-colors group">
+                        
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          
+                          <div className="flex-1 space-y-3">
+                            {/* Term Title & Phonetics */}
+                            <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                              <h3 className="text-lg font-bold text-slate-900">{item.term}</h3>
+                              <span className="inline-block px-2 py-1 bg-slate-100 text-slate-600 text-sm font-mono rounded font-medium">
+                                {item.phonetic}
+                              </span>
+                            </div>
+
+                            {/* Definition */}
+                            <p className="text-slate-700 leading-relaxed">
+                              {item.definition}
+                            </p>
+
+                            {/* Context */}
+                            <div className="flex items-start gap-2 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50">
+                              <MessageSquareQuote className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                              <p className="text-slate-600 italic text-sm">
+                                "{item.context}"
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Action Button: Listen on Cambridge */}
+                          <div className="shrink-0 pt-2 md:pt-0">
+                            <a
+                              href={generateCambridgeUrl(item.cambridgeQuery)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg transition-colors border border-blue-200 shadow-sm"
+                            >
+                              <Volume2 size={18} />
+                              <span>Listen on Cambridge</span>
+                              <ExternalLink size={14} className="opacity-70" />
+                            </a>
+                          </div>
+
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        
+        <footer className="mt-12 text-center text-slate-400 text-sm pb-8">
+          <p>Designed for Silverline Central America & Digital Partner</p>
+        </footer>
+
+      </div>
+    </div>
+  );
+}
